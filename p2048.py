@@ -60,6 +60,9 @@ class P2048:
                         self.grid[i,j] = 2 * self.grid[i,j]
                         self.grid[i+1, j] = 0
                         skip_next = True
+
+                        # Add to score
+                        self.score += int(self.grid[i,j])
                 else:
                     skip_next = False
 
@@ -95,6 +98,3 @@ class P2048:
             for j in range(0,self.gridDim):
                 print(self.grid[i,j], end='    ')
             print('\n')
-
-    def getValue(self, i, j):
-        return self.grid[i,j]
