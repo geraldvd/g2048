@@ -3,24 +3,39 @@ from tkinter import *
 
 # Initialize game
 game = P2048()
-game.print()
 
 # Define key actions
 def leftKey(event):
     game.move(Move.LEFT)
-    game.print()
+    refreshTiles()
 
 def rightKey(event):
     game.move(Move.RIGHT)
-    game.print()
+    refreshTiles()
 
 def upKey(event):
     game.move(Move.UP)
-    game.print()
+    refreshTiles()
 
 def downKey(event):
     game.move(Move.DOWN)
-    game.print()
+    refreshTiles()
+
+# Tile settings
+tile_colors = {0: 'white', 2: 'honeydew', 4: 'moccasin',
+               8: 'peach puff', 16: 'powder blue',
+               32: 'sky blue', 64: 'dark turquoise',
+               128: 'sea green', 256: 'dark olive green',
+               512: 'maroon', 1024: 'deep pink', 2048: 'goldenrod'}
+
+
+def refreshTiles():
+    for i in range(game.gridDim):
+        for j in range(game.gridDim):
+            v = game.getValue(i,j)
+            if v != 0: s = str(v)
+            else: s = ''
+            tiles[i][j].config(text=s, bg=tile_colors[v])
 
 
 # Start Tkinter app
@@ -31,15 +46,15 @@ root.bind('<Up>', upKey)
 root.bind('<Down>', downKey)
 root.title("P2048 Game")
 
-color_alternate = True
-for i in range(3):
-    for j in range(3):
-        if color_alternate:
-            color_alternate = False
-            c = "beige"
-        else:
-            color_alternate = True
-            c = "lightgray"
-        Label(root, text="5", bg=c, width=10, height=5).grid(row=i, column = j)
+# Initialize tiles
+tiles = []
+for i in range(game.gridDim):
+    r_tiles = []
+    for j in range(game.gridDim):
+        r_tiles.append(Label(root, text='', font=("Helvetica", 20), bg=tile_colors[0], width=10, height=5))
+        r_tiles[-1].grid(row=i, column=j)
+    tiles.append(r_tiles)
 
+# Run Tkinter main loop
+refreshTiles()
 root.mainloop()

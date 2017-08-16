@@ -19,9 +19,6 @@ class P2048:
         self.addRandom24()
         self.addRandom24()
 
-        self.addRandom24()
-        self.addRandom24()
-
 
     def move(self, m):
         # Perform 2048 move
@@ -98,3 +95,6 @@ class P2048:
             for j in range(0,self.gridDim):
                 print(self.grid[i,j], end='    ')
             print('\n')
+
+    def getValue(self, i, j):
+        return self.grid[i,j]
