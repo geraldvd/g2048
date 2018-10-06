@@ -1,2 +1,2 @@
-# p2048
-2048 game with python
+# g2048
+2048 game with python and Java
