@@ -1,2 +1,2 @@
 # g2048
-2048 game with python and Java
+2048 game Java, using JavaFX graphics.
