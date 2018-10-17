@@ -30,6 +30,9 @@ public class Board {
 
         // Compute board value
         this.score = builder.score;
+
+        // DEBUG: print board, whenever it is created (e.g., initialization, moves, etc.)
+        System.out.println(this);
     }
 
     public Tile getTile(int x, int y) {
