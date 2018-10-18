@@ -11,6 +11,7 @@ public class Board {
     private final int numCols;
     private final Tile[][] tiles;
     private final int score;
+    private final boolean gameOver;
 
     private Board(Builder builder) {
         // Set board dimensions
@@ -20,19 +21,27 @@ public class Board {
         // Initialize board with null values
         tiles = new Tile[this.numCols][this.numRows];
 
+        // Initialize game over (assumption)
+        Boolean gameOver = true;
+
         // Set tiles that are not null
         for(int y = 0; y < this.numRows; y++) {
             for(int x = 0; x < this.numCols; x++) {
                 final Coordinate c = new Coordinate(x, y);
                 this.tiles[y][x] = builder.boardConfig.get(c);
+
+                // Check game over
+                if(this.tiles[y][x] == null) {
+                    gameOver = false;
+                }
             }
         }
 
+        // Set class variable game over
+        this.gameOver = gameOver;
+
         // Compute board value
         this.score = builder.score;
-
-        // DEBUG: print board, whenever it is created (e.g., initialization, moves, etc.)
-        System.out.println(this);
     }
 
     public Tile getTile(int x, int y) {
@@ -61,6 +70,9 @@ public class Board {
     }
 
     public Board makeMove(Move m) {
+        // TODO Handle game over
+        // TODO Is a move allowed, just to generate a tile? (i.e., no tile moved!)
+
         Builder builder = new Builder(this.numRows, this.numCols, this.score);
         Tile[][] newTiles = new Tile[this.numCols][this.numRows];
         List<Coordinate> freePositions =  new ArrayList<>();
@@ -160,6 +172,10 @@ public class Board {
 
     public int getScore() {
         return this.score;
+    }
+
+    public boolean gameOver() {
+        return this.gameOver;
     }
 
     public static class Builder {

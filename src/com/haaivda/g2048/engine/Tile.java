@@ -28,7 +28,7 @@ public class Tile {
         return Integer.toString(this.value);
     }
 
-    int getValue() {
+    public int getValue() {
         return this.value;
     }
 
