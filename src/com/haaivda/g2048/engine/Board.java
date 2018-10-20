@@ -98,7 +98,7 @@ public class Board {
         return true;
     }
 
-    Board makeMove(Move m) {
+    public Board makeMove(Move m) {
         Builder builder = new Builder(this.numRows, this.numCols, this.score, this.random.nextInt());
         Tile[][] newTiles = new Tile[this.numCols][this.numRows];
         List<Coordinate> freePositions =  new ArrayList<>();
@@ -208,6 +208,21 @@ public class Board {
 
     public boolean gameOver() {
         return this.gameOver;
+    }
+
+    public List<Integer> getBoardState() {
+        List<Integer> boardState = new ArrayList<>();
+        for(int y = 0; y < this.numRows; y++) {
+            for(int x = 0; x < this.numCols; x++) {
+                Tile currentTile = this.tiles[y][x];
+                if(currentTile == null) {
+                    boardState.add(0);
+                } else {
+                    boardState.add(currentTile.getValue());
+                }
+            }
+        }
+        return boardState;
     }
 
     private static class Builder {
