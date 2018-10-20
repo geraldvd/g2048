@@ -7,8 +7,8 @@ public class Game {
     private final Stack<Board> boardHistory;
 
     public Game() {
-        this.board = Board.createInitialBoard();
         this.boardHistory = new Stack<>();
+        this.newGame();
     }
 
     public Board getBoard() {
@@ -27,7 +27,7 @@ public class Game {
     }
 
     public void newGame() {
-        this.board = Board.createInitialBoard();
+        this.board = Board.createInitialBoard(0);
         this.boardHistory.clear();
     }
 }

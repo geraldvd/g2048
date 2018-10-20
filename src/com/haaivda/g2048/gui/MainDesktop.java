@@ -17,11 +17,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import org.w3c.dom.css.Rect;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 
 public class MainDesktop extends Application {
     private Game game;
@@ -30,7 +28,7 @@ public class MainDesktop extends Application {
 
     private final static Map<Integer,Color> TILE_COLORS = initializeTileColors();
     private final static int BOARD_WIDTH = 400;
-    private final static int BOARD_HEIGTH = 400;
+    private final static int BOARD_HEIGHT = 400;
 
     public static void main(String[] args) {
         launch(args);
@@ -116,7 +114,7 @@ public class MainDesktop extends Application {
                 StackPane stackPane = new StackPane();
 
                 // Draw rectangle
-                Rectangle rectangle = new Rectangle((int)(BOARD_WIDTH / this.game.getBoard().getNumCols()), (int)(BOARD_HEIGTH / this.game.getBoard().getNumRows()));
+                Rectangle rectangle = new Rectangle((int)(BOARD_WIDTH / this.game.getBoard().getNumCols()), (int)(BOARD_HEIGHT / this.game.getBoard().getNumRows()));
                 if(currentTile == null) {
                     rectangle.setFill(TILE_COLORS.get(0));
                 } else {
@@ -149,7 +147,7 @@ public class MainDesktop extends Application {
         StackPane gameOverStackPane = new StackPane();
         if(this.game.getBoard().gameOver()) {
             // Partly transparent background
-            Rectangle rectangle = new Rectangle(BOARD_WIDTH, BOARD_HEIGTH, Color.rgb(200, 200, 200, 0.5));
+            Rectangle rectangle = new Rectangle(BOARD_WIDTH, BOARD_HEIGHT, Color.rgb(200, 200, 200, 0.5));
 
             // Text field
             Text gameOverField = new Text();

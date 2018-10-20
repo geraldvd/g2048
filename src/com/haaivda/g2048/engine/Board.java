@@ -1,10 +1,6 @@
 package com.haaivda.g2048.engine;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.*;
 
 public class Board {
     private final int numRows;
@@ -12,36 +8,44 @@ public class Board {
     private final Tile[][] tiles;
     private final int score;
     private final boolean gameOver;
+    private final Random random;
+
+    private static final double PROBABILITY_TWO_TILE = 0.9;
 
     private Board(Builder builder) {
-        // Set board dimensions
         this.numRows = builder.numRows;
         this.numCols = builder.numCols;
+        this.random = builder.random;
 
-        // Initialize board with null values
+        // Initialize board with tiles (null if tile is empty)
         tiles = new Tile[this.numCols][this.numRows];
-
-        // Initialize game over (assumption)
-        Boolean gameOver = true;
-
-        // Set tiles that are not null
         for(int y = 0; y < this.numRows; y++) {
             for(int x = 0; x < this.numCols; x++) {
                 final Coordinate c = new Coordinate(x, y);
                 this.tiles[y][x] = builder.boardConfig.get(c);
-
-                // Check game over
-                if(this.tiles[y][x] == null) {
-                    gameOver = false;
-                }
             }
         }
-
-        // Set class variable game over
-        this.gameOver = gameOver;
-
-        // Compute board value
+        this.gameOver = Board.checkGameOver(this);
         this.score = builder.score;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Board board = (Board) o;
+        return numRows == board.numRows &&
+                numCols == board.numCols &&
+                score == board.score &&
+                gameOver == board.gameOver &&
+                Arrays.deepEquals(tiles, board.tiles); // Multidimensional array, so deepEquals needed!!
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(numRows, numCols, score, gameOver);
+        result = 31 * result + Arrays.hashCode(tiles);
+        return result;
     }
 
     public Tile getTile(int x, int y) {
@@ -51,29 +55,51 @@ public class Board {
         return this.tiles[y][x];
     }
 
-    public static Board createInitialBoard() {
-        Builder builder = new Builder(4, 4, 0);
+    static Board createInitialBoard(int randomSeed) {
+        Builder builder = new Builder(4, 4, 0, randomSeed);
         // Set two random coordinates for initial tiles
-        Coordinate c1 = new Coordinate(ThreadLocalRandom.current().nextInt(0, builder.numCols),
-                                        ThreadLocalRandom.current().nextInt(0, builder.numRows));
+        Coordinate c1 = new Coordinate(builder.random.nextInt(builder.numCols),
+                                        builder.random.nextInt(builder.numRows));
         Coordinate c2;
         do {
-            c2 = new Coordinate(ThreadLocalRandom.current().nextInt(0, builder.numCols),
-                                ThreadLocalRandom.current().nextInt(0, builder.numRows));
+            c2 = new Coordinate(builder.random.nextInt(builder.numCols),
+                                builder.random.nextInt(builder.numRows));
         } while(c2.equals(c1));
 
         // Add random tiles
         builder.setInitialTile(c1);
         builder.setInitialTile(c2);
-
         return builder.build();
     }
 
-    public Board makeMove(Move m) {
-        // TODO Handle game over
-        // TODO Is a move allowed, just to generate a tile? (i.e., no tile moved!)
+    private static boolean checkGameOver(Board board) {
+        for(int y = 0; y < board.numRows; y++) {
+            for(int x = 0; x < board.numCols; x++) {
+                final Tile tile = board.getTile(x, y);
+                // If there is still a free space: no game over!
+                if(tile == null) {
+                    return false;
+                }
+                // Check adjacent tiles
+                if(x + 1 < board.numCols) {
+                    final Tile adjacentTile = board.getTile(x + 1, y);
+                    if(adjacentTile != null && adjacentTile.getValue() == tile.getValue()) {
+                        return false;
+                    }
+                }
+                if(y + 1 < board.numRows) {
+                    final Tile adjacentTile = board.getTile(x, y + 1);
+                    if(adjacentTile != null && adjacentTile.getValue() == tile.getValue()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 
-        Builder builder = new Builder(this.numRows, this.numCols, this.score);
+    Board makeMove(Move m) {
+        Builder builder = new Builder(this.numRows, this.numCols, this.score, this.random.nextInt());
         Tile[][] newTiles = new Tile[this.numCols][this.numRows];
         List<Coordinate> freePositions =  new ArrayList<>();
 
@@ -87,18 +113,17 @@ public class Board {
                         final Tile newTile = newTiles[currentY][x];
                         if(newTile != null) {
                             if (newTile.getValue() == currentTile.getValue()) {
-                                newTiles[currentY][x] = currentTile.moveAndDoubleTile(new Coordinate(x, currentY));
+                                newTiles[currentY][x] = currentTile.createMovedAndDoubledTile(new Coordinate(x, currentY));
                                 currentY -= m.getDirectionY();
                                 continue;
                             }
                             currentY -= m.getDirectionY();
                         }
-                        newTiles[currentY][x] = currentTile.moveTile(new Coordinate(x, currentY));
+                        newTiles[currentY][x] = currentTile.createMovedTile(new Coordinate(x, currentY));
                     }
                 }
             }
         }
-
         // Calculate moves in x-direction
         else if(m == Move.LEFT || m == Move.RIGHT) {
             for(int y = 0; y < this.numRows; y++) {
@@ -109,19 +134,17 @@ public class Board {
                         final Tile newTile = newTiles[y][currentX];
                         if(newTile != null) {
                             if (newTile.getValue() == currentTile.getValue()) {
-                                newTiles[y][currentX] = currentTile.moveAndDoubleTile(new Coordinate(currentX, y));
+                                newTiles[y][currentX] = currentTile.createMovedAndDoubledTile(new Coordinate(currentX, y));
                                 currentX -= m.getDirectionX();
                                 continue;
                             }
                             currentX -= m.getDirectionX();
                         }
-                        newTiles[y][currentX] = currentTile.moveTile(new Coordinate(currentX, y));
+                        newTiles[y][currentX] = currentTile.createMovedTile(new Coordinate(currentX, y));
                     }
                 }
             }
-        }
-
-        else {
+        } else {
             throw new RuntimeException("Should not get here; impossible move!");
         }
 
@@ -136,9 +159,18 @@ public class Board {
             }
         }
 
-        // Add new random tile
-        builder.setInitialTile(freePositions.get(ThreadLocalRandom.current().nextInt(0, freePositions.size())));
+        // Check move validity
+        if(freePositions.isEmpty()) {
+            // invalid move
+            return this;
+        }
+        Board boardWithoutRandomTile = builder.build();
+        if(boardWithoutRandomTile.equals(this)) {
+            return this;
+        }
 
+        // Add random tile and return
+        builder.setInitialTile(freePositions.get(this.random.nextInt(freePositions.size())));
         return builder.build();
     }
 
@@ -178,21 +210,26 @@ public class Board {
         return this.gameOver;
     }
 
-    public static class Builder {
-        Map<Coordinate, Tile> boardConfig;
+    private static class Builder {
+        final Map<Coordinate, Tile> boardConfig;
         int score;
         final int numRows;
         final int numCols;
+        final Random random;
 
-        Builder(int numRows, int numCols, int initialScore) {
+        Builder(int numRows, int numCols, int initialScore, int randomSeed) {
             this.boardConfig = new HashMap<>();
             this.score = initialScore;
             this.numRows = numRows;
             this.numCols = numCols;
+            this.random = new Random();
+            if(randomSeed > 0) {
+                this.random.setSeed(randomSeed);
+            }
         }
 
         void setInitialTile(final Coordinate c) {
-            this.boardConfig.put(c, Tile.createInitialTile(c, ThreadLocalRandom.current().nextDouble() < 0.9 ? 2 : 4));
+            this.boardConfig.put(c, Tile.createInitialTile(c, this.random.nextDouble() < PROBABILITY_TWO_TILE ? 2 : 4));
         }
 
         void addTile(Tile t) {

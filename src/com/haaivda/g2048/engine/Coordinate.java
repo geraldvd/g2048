@@ -1,6 +1,8 @@
 package com.haaivda.g2048.engine;
 
-public class Coordinate {
+import java.util.Objects;
+
+class Coordinate {
     private final int x;
     private final int y;
 
@@ -10,19 +12,16 @@ public class Coordinate {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if(this == obj) {
-            return true;
-        }
-        if(!(obj instanceof Coordinate)) {
-            return false;
-        }
-        final Coordinate c = (Coordinate)obj;
-        return this.x == c.x && this.y == c.y;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Coordinate that = (Coordinate) o;
+        return x == that.x &&
+                y == that.y;
     }
 
     @Override
     public int hashCode() {
-        return 31 * this.x + this.y;
+        return Objects.hash(x, y);
     }
 }
